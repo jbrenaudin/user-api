@@ -1,0 +1,80 @@
+language: php
+php:
+- 7.1.7
+
+stages:
+  - name: Run unit tests
+    if: branch IN (develop)
+  - name: Deploy to staging
+    if: branch IN (develop)
+  - name: Run tests on staging
+    if: branch IN (develop)
+  - name: Create release tag
+    if: branch IN (master)
+  - name: Deploy to production
+    if: branch IN (master)
+  - name: Run tests on production
+    if: branch IN (master)
+
+jobs:
+  include:
+
+  - stage: Run unit tests
+    install:
+    - composer self-update
+    - composer install
+    script:
+      - composer test
+    after_success:
+      - $TRAVIS_BRANCH = "develop" && CODECLIMATE_REPO_TOKEN="326e42986c21a299ec86f51512719cd46018a5e175e37404ae92bd8aa429a846" ./vendor/bin/test-reporter --stdout > codeclimate.json
+      - $TRAVIS_BRANCH = "develop" && 'curl -X POST -d @codeclimate.json -H ''Content-Type: application/json'' -H ''User-Agent:Code Climate (PHP Test Reporter v0.1.1)'' https://codeclimate.com/test_reports'
+
+  - stage: Deploy to staging
+    install:
+      - composer self-update
+      - composer install --no-dev --no-interaction --optimize-autoloader --no-suggest --no-progress
+    script: skip
+    deploy:
+      provider: heroku
+      api_key:
+        secure: FicKTqX5QzlozAl2g9bY1iaDqMdQYeo8VJKmRFZlKTK6dHCYt1Brign++KXdMtMSej4nDFNaosYZdLRCUqo8qs18Ec7HxsWNG8NeARMkqy870HhV5YUNrEExLv6MotEwuBqhYn3GiRIEvN4xz7UjmiS9Rf+6WfO//sVsXv5y1Rjmj7ZltemyMJ78jy17Q01bWx2a2tTRiPPRhYOnpj9rEp3sNVmOTqMlC/uYpzca8dQpMPblYXIo4LV1k9E9s0pHhU77brYkxQlkAst1KU3GpSUDb1cVdXc8ldCG4sSM++8FKMY4skhMC++Ka1PftkAFVLMksjXt0LptRitck8ENZeEfzbWMxHwsMAOFzvnXa5tb9jgBop+/+/OggYMkMiVogclgL1uDq5MGf7O6xpDVYdJ9RdUmjqW8wIAkuX0+kSgvEb75aR4Zn4x9wEvCn+R4Vf2c3e0lWp72px9VqeELP2FpEN3i85S/MG5G+FmdniaFEYoarUcxmUeT8z45uBQuxLbOnF9ZmFhzMAljCXQ0zcxB47Ny1meJCtKwEPoOwNHsvGXK0bHFRCkwf7X/GP4VQziHKOxCaoTQdsibiCwqmK1CgnA01Bon0d/cd7pep2n8ZoRsKjwqQDFTVtreaCCGlq/7JYknSnMWzuWzVEZV3vQC5cRCrArIT6+j/GCWiKA=
+      app: user-api-staging
+      on:
+        repo: jbrenaudin/user-api
+
+  - stage: Run tests on staging
+    script: 'curl https://user-api-staging.herokuapp.com/users'
+
+  - stage: Create release tag
+    install:
+      - composer self-update
+      - composer install --no-dev --no-interaction --optimize-autoloader --no-suggest --no-progress
+    script:
+      - tar czf api-user-$(cat .version).tgz *
+    before_deploy:
+      - git config --local user.name "builds@travis-ci.com"
+      - git config --local user.email "Travis CI"
+      - git tag "$(cat .version)"
+    deploy:
+      provider: releases
+      api_key:
+        secure: "hYXZIs5davrjoGFl8BVrvCew6jIKoSUZQ/TRdmeH2Cx+xYhgJXinbb1QbOgVzzy/cwAgRJRRWxs9nLU5Jkd7X97V9IJKB/aluHXqvzh/bo9ifxLuSOh7F4S+oHfT16O7klFvG7v4OWCRSqIVwV9TFNhhs1uEvaAic6+5kEwHFaoOt1IvGBunMO6ck3PH7OvtnI/7Fi/ouft47g65zv8Qu0dXgqLykQF4TJbYriDUG7lAiePERHGvz94hV55KpXZQ6pizY/oWc54YsC41QBE/Wh/SsTdxOmPpPRtgs2Z8K5X34DoJrXaH28FtKPInu4zfuboEPYy/HzhdelGErUVvkTSjyZqzvRi/WcbIEHZvOAOm009ysZo9wPGJDoBiF0yvmsxlPb5ci0ARinrxuM+UfcZMvddPEXg3Xpy7hDRzi3/iA/UJVtZVFLve91XnzEdCypL1kE+pTcIVy+MsXXgh15F17kbY4zdB31PQJXwJV7hkz0w6X8NiXBMTDbhnKjSM8OuQVfi8nfq8BLzGPmL5nG2jnX6XKleZNttMWl6uG6qRf6NwUxZad8SXCqK3kGoIUeTRfp3iK+BN9g2Hlxu/36f7fvPx28MN2T8MfBan0CkxnOoeEdJC09ZKj0+i44gI8BS4x7sq4epS75xBSWfxTps8eK0Ts2qEJwultkaaj7k="
+      file:
+        - api-user.tgz
+      skip_cleanup: true
+
+  - stage: Deploy to production
+    install:
+      - composer self-update
+      - composer install --no-dev --no-interaction --optimize-autoloader --no-suggest --no-progress
+    script: skip
+    deploy:
+      provider: heroku
+      api_key:
+        secure: FicKTqX5QzlozAl2g9bY1iaDqMdQYeo8VJKmRFZlKTK6dHCYt1Brign++KXdMtMSej4nDFNaosYZdLRCUqo8qs18Ec7HxsWNG8NeARMkqy870HhV5YUNrEExLv6MotEwuBqhYn3GiRIEvN4xz7UjmiS9Rf+6WfO//sVsXv5y1Rjmj7ZltemyMJ78jy17Q01bWx2a2tTRiPPRhYOnpj9rEp3sNVmOTqMlC/uYpzca8dQpMPblYXIo4LV1k9E9s0pHhU77brYkxQlkAst1KU3GpSUDb1cVdXc8ldCG4sSM++8FKMY4skhMC++Ka1PftkAFVLMksjXt0LptRitck8ENZeEfzbWMxHwsMAOFzvnXa5tb9jgBop+/+/OggYMkMiVogclgL1uDq5MGf7O6xpDVYdJ9RdUmjqW8wIAkuX0+kSgvEb75aR4Zn4x9wEvCn+R4Vf2c3e0lWp72px9VqeELP2FpEN3i85S/MG5G+FmdniaFEYoarUcxmUeT8z45uBQuxLbOnF9ZmFhzMAljCXQ0zcxB47Ny1meJCtKwEPoOwNHsvGXK0bHFRCkwf7X/GP4VQziHKOxCaoTQdsibiCwqmK1CgnA01Bon0d/cd7pep2n8ZoRsKjwqQDFTVtreaCCGlq/7JYknSnMWzuWzVEZV3vQC5cRCrArIT6+j/GCWiKA=
+      app: user-api-production
+      on:
+        repo: jbrenaudin/user-api
+
+  - stage: Run tests on production
+    script: 'curl https://user-api-production.herokuapp.com/users'
