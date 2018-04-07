@@ -9,7 +9,7 @@ stages:
     if: branch IN (develop)
   - name: Run tests on staging
     if: branch IN (develop)
-  - name: Create release tag
+  - name: Create release
     if: branch IN (master)
   - name: Deploy to production
     if: branch IN (master)
@@ -45,7 +45,7 @@ jobs:
   - stage: Run tests on staging
     script: 'curl https://user-api-staging.herokuapp.com/users'
 
-  - stage: Create release tag
+  - stage: Create release
     install:
       - composer self-update
       - composer install --no-dev --no-interaction --optimize-autoloader --no-suggest --no-progress
