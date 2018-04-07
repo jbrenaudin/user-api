@@ -21,5 +21,5 @@ curl https://user-api-staging.herokuapp.com/users?fields=id,firstname,surname
 
 on production :
 ```bash
-curl https://user-api-staging.herokuapp.com/users?fields=id,firstname,surname
+curl https://user-api-production.herokuapp.com/users?fields=id,firstname,surname
 ```
