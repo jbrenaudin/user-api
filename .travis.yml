@@ -4,7 +4,7 @@ php:
 
 stages:
   - name: Run unit tests
-    if: branch IN (develop)
+    if: branch IN (develop,master)
   - name: Deploy to staging
     if: branch IN (develop)
   - name: Run tests on staging
