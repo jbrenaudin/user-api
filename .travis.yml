@@ -60,7 +60,7 @@ jobs:
       api_key:
         secure: "hYXZIs5davrjoGFl8BVrvCew6jIKoSUZQ/TRdmeH2Cx+xYhgJXinbb1QbOgVzzy/cwAgRJRRWxs9nLU5Jkd7X97V9IJKB/aluHXqvzh/bo9ifxLuSOh7F4S+oHfT16O7klFvG7v4OWCRSqIVwV9TFNhhs1uEvaAic6+5kEwHFaoOt1IvGBunMO6ck3PH7OvtnI/7Fi/ouft47g65zv8Qu0dXgqLykQF4TJbYriDUG7lAiePERHGvz94hV55KpXZQ6pizY/oWc54YsC41QBE/Wh/SsTdxOmPpPRtgs2Z8K5X34DoJrXaH28FtKPInu4zfuboEPYy/HzhdelGErUVvkTSjyZqzvRi/WcbIEHZvOAOm009ysZo9wPGJDoBiF0yvmsxlPb5ci0ARinrxuM+UfcZMvddPEXg3Xpy7hDRzi3/iA/UJVtZVFLve91XnzEdCypL1kE+pTcIVy+MsXXgh15F17kbY4zdB31PQJXwJV7hkz0w6X8NiXBMTDbhnKjSM8OuQVfi8nfq8BLzGPmL5nG2jnX6XKleZNttMWl6uG6qRf6NwUxZad8SXCqK3kGoIUeTRfp3iK+BN9g2Hlxu/36f7fvPx28MN2T8MfBan0CkxnOoeEdJC09ZKj0+i44gI8BS4x7sq4epS75xBSWfxTps8eK0Ts2qEJwultkaaj7k="
       file:
-        - api-user.tgz
+        - api-user-$(cat .version).tgz
       skip_cleanup: true
 
   - stage: Deploy to production
